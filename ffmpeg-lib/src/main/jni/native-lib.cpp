@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <string>
 #include <android/log.h>
+#include "com_aispeech_ffmpeg_lib_FfmpegUtil.h"
 extern "C"{
 #include <libavformat/avformat.h>
 }

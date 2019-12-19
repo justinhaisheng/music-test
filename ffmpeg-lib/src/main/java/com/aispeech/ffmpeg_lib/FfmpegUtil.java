@@ -25,4 +25,5 @@ public class FfmpegUtil {
      * which is packaged with this application.
      */
     public native String stringFromJNI();
+
 }

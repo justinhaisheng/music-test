@@ -1,4 +1,4 @@
-package com.aispeech.ffmpeg_lib;
+package com.aispeech.audio;
 
 import android.content.Context;
 

@@ -57,7 +57,10 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        src/main/jni/native-lib.cpp)
+        src/main/jni/audio_core.cpp
+        src/main/jni/Audio_callback.cpp
+        src/main/jni/Audio.cpp
+        src/main/jni/FFmpeg_util.cpp)
 
 target_link_libraries( # Specifies the target library.
         native-lib

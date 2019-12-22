@@ -60,7 +60,10 @@ add_library( # Sets the name of the library.
         src/main/jni/audio_core.cpp
         src/main/jni/Audio_callback.cpp
         src/main/jni/Audio.cpp
-        src/main/jni/FFmpeg_util.cpp)
+        src/main/jni/FFmpeg_util.cpp
+        src/main/jni/Play_status.cpp
+        src/main/jni/Play_queue.cpp)
+
 
 target_link_libraries( # Specifies the target library.
         native-lib

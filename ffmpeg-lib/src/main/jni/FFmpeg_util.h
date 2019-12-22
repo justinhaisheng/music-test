@@ -26,9 +26,9 @@ public:
     AVFormatContext* avFormatContext = NULL;
     pthread_t codec_t;
 
+    Play_status* play_status;
 
-
-    FFmpeg_util(const char* url,Audio_callback* callback);
+    FFmpeg_util(Play_status* play_status,const char* url,Audio_callback* callback);
     ~FFmpeg_util();
     FFmpeg_util(const FFmpeg_util& fFmpegUtil);
     void prepare();

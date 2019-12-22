@@ -9,6 +9,9 @@ extern "C"{
 };
 
 #include "AndroidLog.h"
+#include "Play_status.h"
+#include "Play_queue.h"
+
 //保存解码音频的信息
 class Audio {
 private:
@@ -17,9 +20,10 @@ private:
     AVCodecParameters* parameters = NULL;//编码器参数
 
 public:
-    Audio();
+    Audio(Play_status* play_status);
     ~Audio();
-
+    Play_status* play_status = NULL;
+    Play_queue* queue =NULL;
     int getStreamIndex() const;
 
     void setStreamIndex(int streamIndex);

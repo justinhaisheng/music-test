@@ -4,8 +4,9 @@
 
 #include "FFmpeg_util.h"
 
-FFmpeg_util::FFmpeg_util(const char* url,Audio_callback* callback){
+FFmpeg_util::FFmpeg_util(Play_status* play_status,const char* url,Audio_callback* callback){
     LOGD("FFmpeg_util");
+    this->play_status = play_status;
     this->url = static_cast<char *>(malloc(sizeof(char) * 100));
     strcpy(this->url,url);
     this->callback = callback;
@@ -20,6 +21,7 @@ FFmpeg_util::FFmpeg_util(const FFmpeg_util& fFmpegUtil){
     this->avFormatContext = fFmpegUtil.avFormatContext;
     this->audio = fFmpegUtil.audio;
     this->codec_t = fFmpegUtil.codec_t;
+    this->play_status = fFmpegUtil.play_status;
 }
 
 FFmpeg_util::~FFmpeg_util(){
@@ -64,7 +66,7 @@ void *decode_ffmpeg(void *data)
             LOGD("codecpar->codec_id == AVMEDIA_TYPE_AUDIO %d",i);
             if (fmpegUtil->audio == NULL){
                 LOGD("mpegUtil->audio == NULL %d",i);
-                fmpegUtil->audio = new Audio();
+                fmpegUtil->audio = new Audio(fmpegUtil->play_status);
                 fmpegUtil->audio->setStreamIndex(i);
                 fmpegUtil->audio->setParameters(avFormatContext->streams[i]->codecpar);
             }
@@ -116,22 +118,30 @@ void *decode_ffmpeg(void *data)
                 if (count == 1){
                     fmpegUtil->callback->onStart(CHILD_THREAD);
                 }
-                //todo
-                av_packet_free(&avPacket);
-                av_free(avPacket);
+                //todo 入列
+                fmpegUtil->audio->queue->putAvpacket(avPacket);
             }else{
                 av_packet_free(&avPacket);
                 av_free(avPacket);
+                avPacket = NULL;
             }
         }else{
             av_packet_free(&avPacket);
             av_free(avPacket);
+            avPacket = NULL;
+            break;//退出循环
         }
     }
 
+    while(fmpegUtil->audio->queue->getQueueSize() >0){
+        AVPacket* avPacket = av_packet_alloc();//申请每个avPacket的容量
+        fmpegUtil->audio->queue->getAvpacket(avPacket);
+        av_packet_free(&avPacket);
+        av_free(avPacket);
+        avPacket = NULL;
+    }
 
-
-
+    LOGD("解码完成");
 
     //退出线程
     pthread_exit(&fmpegUtil->codec_t);

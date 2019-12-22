@@ -28,8 +28,10 @@ void Audio::setParameters(AVCodecParameters *parameters) {
     this->parameters = parameters;
 }
 
-Audio::Audio() {
+Audio::Audio(Play_status* play_status) {
     LOGD("Audio");
+    this->play_status = play_status;
+    queue =new Play_queue(play_status);
 }
 
 Audio::~Audio() {

@@ -5,7 +5,7 @@
 JavaVM* javaVm ;
 FFmpeg_util* fFmpegUtil = NULL;
 Audio_callback* audioCallback =NULL;
-
+Play_status* playStatus = NULL;
 extern "C"
 JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_start
         (JNIEnv *env, jobject jobj, jstring jstr){
@@ -16,7 +16,8 @@ JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_start
         if (audioCallback == NULL){
             audioCallback = new Audio_callback(javaVm,env,env->NewGlobalRef(jobj));
         }
-        fFmpegUtil = new FFmpeg_util(url,audioCallback);
+        playStatus = new Play_status();
+        fFmpegUtil = new FFmpeg_util(playStatus,url,audioCallback);
 
     }
     env->ReleaseStringUTFChars(jstr,url);

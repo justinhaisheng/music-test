@@ -105,6 +105,34 @@ void *decode_ffmpeg(void *data)
     LOGD("decode_ffmpeg() 7 %s",fmpegUtil->url);
     fmpegUtil->callback->onPrepare(CHILD_THREAD);
 
+    //开始解码
+    int count = 0;
+    while (1){
+        AVPacket* avPacket = av_packet_alloc();//申请每个avPacket的容量
+        if (av_read_frame(avFormatContext,avPacket) == 0){
+            if (avPacket->stream_index == fmpegUtil->audio->getStreamIndex()){//音频帧
+                count++;
+                LOGI("read_frame %d",count);
+                if (count == 1){
+                    fmpegUtil->callback->onStart(CHILD_THREAD);
+                }
+                //todo
+                av_packet_free(&avPacket);
+                av_free(avPacket);
+            }else{
+                av_packet_free(&avPacket);
+                av_free(avPacket);
+            }
+        }else{
+            av_packet_free(&avPacket);
+            av_free(avPacket);
+        }
+    }
+
+
+
+
+
     //退出线程
     pthread_exit(&fmpegUtil->codec_t);
 

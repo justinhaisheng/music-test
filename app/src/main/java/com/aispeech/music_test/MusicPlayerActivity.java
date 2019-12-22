@@ -58,7 +58,13 @@ public class MusicPlayerActivity extends AppCompatActivity {
     }
 
     public void start(View view){
-        AudioCore.getInstance().start(MusicConfig.MUSIC_1);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                AudioCore.getInstance().start(MusicConfig.MUSIC_2);
+            }
+        }).start();
+
     }
 
     public void stop(View view){

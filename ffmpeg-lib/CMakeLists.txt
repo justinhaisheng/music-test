@@ -58,11 +58,12 @@ add_library( # Sets the name of the library.
 
         # Provides a relative path to your source file(s).
         src/main/jni/audio_core.cpp
-        src/main/jni/Audio_callback.cpp
+        src/main/jni/PlayQueue.cpp
         src/main/jni/Audio.cpp
-        src/main/jni/FFmpeg_util.cpp
-        src/main/jni/Play_status.cpp
-        src/main/jni/Play_queue.cpp)
+        src/main/jni/CallJava.cpp
+        src/main/jni/FFmpegCore.cpp
+        src/main/jni/Playstatus.cpp
+        )
 
 
 target_link_libraries( # Specifies the target library.

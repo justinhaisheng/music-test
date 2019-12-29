@@ -43,7 +43,8 @@ public class AudioCore {
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
-    public native void start(String url);
+    public native void parpare(String url);
+    public native void start();
     public native void stop();
 
     /*
@@ -70,7 +71,7 @@ public class AudioCore {
         }
     }
 
-    public void start(){
+    public void start_n(){
         if (mAudioCallback!=null){
             mAudioCallback.onStart();
         }

@@ -12,12 +12,20 @@ import com.aispeech.audio.AudioCore;
 public class MusicPlayerActivity extends AppCompatActivity {
 
     private static final String TAG = MusicPlayerActivity.class.getSimpleName();
+    //private WlPlayer mWlPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_player);
-
+//        mWlPlayer = new WlPlayer();
+//        mWlPlayer.setSource(MusicConfig.MUSIC_2);
+//        mWlPlayer.setWlOnParparedListener(new WlOnParparedListener() {
+//            @Override
+//            public void onParpared() {
+//                mWlPlayer.start();
+//            }
+//        });
     }
 
     public static void jumpMusicPlayerActivity(Context context){
@@ -32,6 +40,13 @@ public class MusicPlayerActivity extends AppCompatActivity {
             @Override
             public void onPrepare() {
                 Log.d(TAG,"onPrepare()");
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AudioCore.getInstance().start();
+                    }
+                }).start();
+
             }
 
             @Override
@@ -61,7 +76,8 @@ public class MusicPlayerActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                AudioCore.getInstance().start(MusicConfig.MUSIC_2);
+//                mWlPlayer.parpared();
+                AudioCore.getInstance().parpare(MusicConfig.MUSIC_2);
             }
         }).start();
 

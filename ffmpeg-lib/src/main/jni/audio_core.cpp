@@ -1,28 +1,37 @@
 
 #include "com_aispeech_audio_AudioCore.h"
-#include "FFmpeg_util.h"
+#include "FFmpegCore.h"
 #include <string.h>
 JavaVM* javaVm ;
-FFmpeg_util* fFmpegUtil = NULL;
-Audio_callback* audioCallback =NULL;
-Play_status* playStatus = NULL;
+FFmpegCore* core = NULL;
+CallJava* callJava =NULL;
+Playstatus* playStatus = NULL;
+
 extern "C"
 JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_start
+        (JNIEnv *env, jobject jobj){
+    if (core && playStatus && !playStatus->exit){
+        core->start();
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_parpare
         (JNIEnv *env, jobject jobj, jstring jstr){
 
-     const char* url = env->GetStringUTFChars(jstr, 0);
+    const char* url = env->GetStringUTFChars(jstr, 0);
     LOGD("Java_com_aispeech_audio_AudioCore_start %s",url);
-    if (fFmpegUtil == NULL){
-        if (audioCallback == NULL){
-            audioCallback = new Audio_callback(javaVm,env,env->NewGlobalRef(jobj));
+    if (core == NULL){
+        if (callJava == NULL){
+            callJava = new CallJava(javaVm,env,jobj);
         }
-        playStatus = new Play_status();
-        fFmpegUtil = new FFmpeg_util(playStatus,url,audioCallback);
+        playStatus = new Playstatus();
+        core = new FFmpegCore(playStatus,callJava,url);
 
     }
     env->ReleaseStringUTFChars(jstr,url);
 
-    fFmpegUtil->prepare();
+    core->prepare();
 }
 
 extern "C"

@@ -1,41 +1,46 @@
 //
-// Created by haisheng.lu on 2019/12/21.
+// Created by yangw on 2018-2-28.
 //
 
-#ifndef MUSIC_TEST_AUDIO_H
-#define MUSIC_TEST_AUDIO_H
-extern "C"{
-#include "include/libavcodec/avcodec.h"
+#ifndef MYMUSIC_WLAUDIO_H
+#define MYMUSIC_WLAUDIO_H
+
+#include "PlayQueue.h"
+#include "Playstatus.h"
+
+extern "C"
+{
+#include "libavcodec/avcodec.h"
+#include <libswresample/swresample.h>
 };
 
-#include "AndroidLog.h"
-#include "Play_status.h"
-#include "Play_queue.h"
-
-//保存解码音频的信息
 class Audio {
-private:
-    int streamIndex = -1;//码流id
-    AVCodecContext* avCodecContext =NULL;//编码器上下文
-    AVCodecParameters* parameters = NULL;//编码器参数
 
 public:
-    Audio(Play_status* play_status);
+    int streamIndex = -1;
+    AVCodecContext *avCodecContext = NULL;
+    AVCodecParameters *codecpar = NULL;
+    PlayQueue *queue = NULL;
+    Playstatus *playstatus = NULL;
+
+    pthread_t thread_play;
+    AVPacket *avPacket = NULL;
+    AVFrame *avFrame = NULL;
+    //int ret = 0;
+    uint8_t *buffer = NULL;
+    //int data_size = 0;
+
+
+
+public:
+    Audio(Playstatus *playstatus);
     ~Audio();
-    Play_status* play_status = NULL;
-    Play_queue* queue =NULL;
-    int getStreamIndex() const;
 
-    void setStreamIndex(int streamIndex);
+    void play();
+    int resampleAudio();
 
-    AVCodecContext *getAvCodecContext() const;
 
-    void setAvCodecContext(AVCodecContext *avCodecContext);
-
-    AVCodecParameters *getParameters();
-
-    void setParameters(AVCodecParameters *parameters);
 };
 
 
-#endif //MUSIC_TEST_AUDIO_H
+#endif //MYMUSIC_WLAUDIO_H

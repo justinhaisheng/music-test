@@ -12,9 +12,11 @@ extern "C" {
  * Method:    start
  * Signature: (Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_start
+JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_parpare
   (JNIEnv *, jobject, jstring);
 
+JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_start
+        (JNIEnv *, jobject);
 /*
  * Class:     com_aispeech_audio_AudioCore
  * Method:    stop

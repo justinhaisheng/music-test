@@ -30,16 +30,12 @@ void FFmpegCore::decodeFFmpegThread() {
     pFormatCtx = avformat_alloc_context();
     if(avformat_open_input(&pFormatCtx, url, NULL, NULL) != 0)
     {
-
-            LOGE("can not open url :%s", url);
-
+        LOGE("can not open url :%s", url);
         return;
     }
     if(avformat_find_stream_info(pFormatCtx, NULL) < 0)
     {
-
-            LOGE("can not find streams from %s", url);
-
+        LOGE("can not find streams from %s", url);
         return;
     }
     for(int i = 0; i < pFormatCtx->nb_streams; i++)
@@ -48,7 +44,7 @@ void FFmpegCore::decodeFFmpegThread() {
         {
             if(audio == NULL)
             {
-                audio = new Audio(playstatus);
+                audio = new Audio(playstatus,pFormatCtx->streams[i]->codecpar->sample_rate,callJava);
                 audio->streamIndex = i;
                 audio->codecpar = pFormatCtx->streams[i]->codecpar;
             }
@@ -58,37 +54,29 @@ void FFmpegCore::decodeFFmpegThread() {
     AVCodec *dec = avcodec_find_decoder(audio->codecpar->codec_id);
     if(!dec)
     {
-
-            LOGE("can not find decoder");
-
+        LOGE("can not find decoder");
         return;
     }
 
     audio->avCodecContext = avcodec_alloc_context3(dec);
     if(!audio->avCodecContext)
     {
-
-            LOGE("can not alloc new decodecctx");
-
+        LOGE("can not alloc new decodecctx");
         return;
     }
 
     if(avcodec_parameters_to_context(audio->avCodecContext, audio->codecpar) < 0)
     {
-
-            LOGE("can not fill decodecctx");
-
+        LOGE("can not fill decodecctx");
         return;
     }
 
     if(avcodec_open2(audio->avCodecContext, dec, 0) != 0)
     {
-
-            LOGE("cant not open audio strames");
-
+        LOGE("cant not open audio strames");
         return;
     }
-    callJava->onCallParpared(CHILD_THREAD);
+    callJava->onCallBack(callJava->jmid_prepare,CHILD_THREAD);
 }
 
 void FFmpegCore::start() {

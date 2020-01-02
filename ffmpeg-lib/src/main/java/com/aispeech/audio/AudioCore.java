@@ -45,6 +45,8 @@ public class AudioCore {
      */
     public native void parpare(String url);
     public native void start();
+    public native void resume();
+    public native void pause();
     public native void stop();
 
     /*
@@ -57,7 +59,13 @@ public class AudioCore {
         void onStart();
         void onProgress(float pro);
         void onComplete(boolean isCom);
+        void onResume();
+        void onPause();
+        void onStop();
+        void loading(boolean load);
     }
+
+
 
     AudioCallback mAudioCallback;
 
@@ -65,7 +73,7 @@ public class AudioCore {
         this.mAudioCallback = audioCallback;
     }
 
-    public void prepare(){
+    public void prepare_n(){
         if (mAudioCallback!=null){
             mAudioCallback.onPrepare();
         }
@@ -77,15 +85,39 @@ public class AudioCore {
         }
     }
 
-    public void progress(float pro){
+    public void progress_n(float pro){
         if (mAudioCallback!=null){
             mAudioCallback.onProgress(pro);
         }
     }
 
-    public void complete(boolean isCom){
+    public void complete_n(){
         if (mAudioCallback!=null){
-            mAudioCallback.onComplete(isCom);
+            mAudioCallback.onComplete(true);
+        }
+    }
+
+    public void resume_n(){
+        if (mAudioCallback!=null){
+            mAudioCallback.onResume();
+        }
+    }
+
+    public void pause_n(){
+        if (mAudioCallback!=null){
+            mAudioCallback.onPause();
+        }
+    }
+
+    public void stop_n(){
+        if (mAudioCallback!=null){
+            mAudioCallback.onStop();
+        }
+    }
+
+    public void load_n(boolean load){
+        if (mAudioCallback!=null){
+            mAudioCallback.loading(load);
         }
     }
 }

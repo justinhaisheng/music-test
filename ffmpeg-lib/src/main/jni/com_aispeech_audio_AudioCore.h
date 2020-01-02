@@ -9,14 +9,36 @@ extern "C" {
 #endif
 /*
  * Class:     com_aispeech_audio_AudioCore
- * Method:    start
+ * Method:    parpare
  * Signature: (Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_parpare
   (JNIEnv *, jobject, jstring);
 
+/*
+ * Class:     com_aispeech_audio_AudioCore
+ * Method:    start
+ * Signature: ()V
+ */
 JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_start
-        (JNIEnv *, jobject);
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_aispeech_audio_AudioCore
+ * Method:    resume
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_resume
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_aispeech_audio_AudioCore
+ * Method:    pause
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_pause
+  (JNIEnv *, jobject);
+
 /*
  * Class:     com_aispeech_audio_AudioCore
  * Method:    stop

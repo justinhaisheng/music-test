@@ -63,6 +63,26 @@ public class MusicPlayerActivity extends AppCompatActivity {
             public void onComplete(boolean isCom) {
                 Log.d(TAG,"onComplete() isCom:"+isCom);
             }
+
+            @Override
+            public void onResume() {
+                Log.d(TAG,"onResume()");
+            }
+
+            @Override
+            public void onPause() {
+                Log.d(TAG,"onPause()");
+            }
+
+            @Override
+            public void onStop() {
+                Log.d(TAG,"onStop()");
+            }
+
+            @Override
+            public void loading(boolean load) {
+                Log.d(TAG,"onStop() load:"+load);
+            }
         });
     }
 
@@ -85,5 +105,11 @@ public class MusicPlayerActivity extends AppCompatActivity {
 
     public void stop(View view){
 
+    }
+
+    public void resume(View view) {
+    }
+
+    public void pause(View view) {
     }
 }

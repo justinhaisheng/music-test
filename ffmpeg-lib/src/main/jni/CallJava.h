@@ -19,14 +19,19 @@ public:
     _JavaVM *javaVM = NULL;
     JNIEnv *jniEnv = NULL;
     jobject jobj;
-
-    jmethodID jmid_parpared;
-
+    jmethodID jmid_prepare;
+    jmethodID jmid_start;
+    jmethodID jmid_progress;
+    jmethodID jmid_complete;
+    jmethodID jmid_resume;
+    jmethodID jmid_pause;
+    jmethodID jmid_stop;
+    jmethodID jmid_load;
 public:
     CallJava(_JavaVM *javaVM, JNIEnv *env, jobject obj);
     ~CallJava();
 
-    void onCallParpared(int type);
+    void onCallBack(jmethodID jmid,int type,...);
 
 };
 

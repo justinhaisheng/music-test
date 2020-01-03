@@ -37,19 +37,19 @@ JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_parpare
 extern "C"
 JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_resume
         (JNIEnv *env, jobject jobj){
-
+    core->resume();
 }
 
 extern "C"
 JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_pause
         (JNIEnv *env, jobject jobj){
-
+    core->pause();
 }
 
 extern "C"
 JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_stop
         (JNIEnv *env, jobject jobj){
-
+    core->stop();
 }
 
 extern "C"

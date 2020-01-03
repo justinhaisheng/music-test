@@ -55,6 +55,9 @@ public:
     ~Audio();
 
     void play();
+    void resume();
+    void pause();
+    void stop();
     void initOpenSLES();
     int resampleAudio();
     int getCurrentSampleRateForOpensles(int sample_rate);

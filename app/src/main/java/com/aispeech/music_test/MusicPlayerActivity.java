@@ -96,7 +96,6 @@ public class MusicPlayerActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-//                mWlPlayer.parpared();
                 AudioCore.getInstance().parpare(MusicConfig.MUSIC_2);
             }
         }).start();
@@ -108,8 +107,20 @@ public class MusicPlayerActivity extends AppCompatActivity {
     }
 
     public void resume(View view) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                AudioCore.getInstance().resume();
+            }
+        }).start();
     }
 
     public void pause(View view) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                AudioCore.getInstance().pause();
+            }
+        }).start();
     }
 }

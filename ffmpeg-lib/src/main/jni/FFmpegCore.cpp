@@ -76,7 +76,7 @@ void FFmpegCore::decodeFFmpegThread() {
         LOGE("cant not open audio strames");
         return;
     }
-    callJava->onCallBack(callJava->jmid_prepare,CHILD_THREAD);
+    callJava->onCallPrepare(CHILD_THREAD);
 }
 
 void FFmpegCore::start() {
@@ -102,7 +102,7 @@ void FFmpegCore::start() {
                 //解码操作
                 count++;
 
-                    LOGE("解码第 %d 帧", count);
+                    LOGI("解码第 %d 帧", count);
 
                 audio->queue->putAvpacket(avPacket);
             } else{
@@ -128,4 +128,23 @@ void FFmpegCore::start() {
 
         LOGD("解码完成");
 
+}
+
+void FFmpegCore::pause(){
+    if (audio){
+        audio->pause();
+    }
+}
+
+
+void FFmpegCore::resume(){
+    if (audio){
+        audio->resume();
+    }
+}
+
+void FFmpegCore::stop(){
+    if (audio){
+        audio->stop();
+    }
 }

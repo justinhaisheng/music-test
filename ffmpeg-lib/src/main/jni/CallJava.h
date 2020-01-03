@@ -33,6 +33,10 @@ public:
 
     void onCallBack(jmethodID jmid,int type,...);
 
+    void onCallPrepare(int type);
+    void onCallStart(int type);
+    void onCallResume(int type);
+    void onCallPause(int type);
 };
 
 

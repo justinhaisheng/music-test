@@ -29,10 +29,35 @@ void Audio::play() {
     pthread_create(&thread_play, NULL, decodPlay, this);
 }
 
+void Audio::resume(){
+    if (pcmPlayerPlay){
+
+        (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay,SL_PLAYSTATE_PLAYING);
+
+        callJava->onCallResume(CHILD_THREAD);
+    }
+   //
+}
+
+void Audio::pause(){
+    if (pcmPlayerPlay){
+
+        (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay,SL_PLAYSTATE_PAUSED);
+
+        callJava->onCallPause(CHILD_THREAD);
+    }
+
+}
+
+void  Audio::stop(){
+
+}
+
 void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void *context) {
     Audio *audio = (Audio *) context;
     if (audio != NULL) {
         int buffersize = audio->resampleAudio();
+        LOGD("pcmBufferCallBack() buffersize");
         if (buffersize > 0) {
             (*audio->pcmBufferQueue)->Enqueue(audio->pcmBufferQueue, (char *) audio->buffer,
                                               buffersize);
@@ -97,10 +122,11 @@ void Audio::initOpenSLES() {
     //缓冲接口回调
     (*pcmBufferQueue)->RegisterCallback(pcmBufferQueue, pcmBufferCallBack, this);
 //    获取播放状态接口
+
     (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay, SL_PLAYSTATE_PLAYING);
     pcmBufferCallBack(pcmBufferQueue, this);
+    callJava->onCallStart(CHILD_THREAD);
 
-    this->callJava->onCallBack(this->callJava->jmid_start, CHILD_THREAD);
 }
 
 int Audio::getCurrentSampleRateForOpensles(int sample_rate) {
@@ -229,7 +255,7 @@ int Audio::resampleAudio() {
 
             //fwrite(buffer, 1, data_size, outFile);
 
-            LOGE("data_size is %d", data_size);
+            LOGD("data_size is %d", data_size);
             av_packet_free(&avPacket);
             av_free(avPacket);
             avPacket = NULL;

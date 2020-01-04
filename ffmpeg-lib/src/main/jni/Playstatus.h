@@ -13,7 +13,7 @@ public:
     bool load;
 public:
     Playstatus();
-
+    ~Playstatus();
 };
 
 

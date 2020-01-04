@@ -12,7 +12,9 @@ PlayQueue::PlayQueue(Playstatus *playstatus) {
 }
 
 PlayQueue::~PlayQueue() {
-
+    clearQueue();
+    pthread_mutex_destroy(&mutexPacket);
+    pthread_cond_destroy(&condPacket);
 }
 
 int PlayQueue::putAvpacket(AVPacket *packet) {
@@ -21,7 +23,7 @@ int PlayQueue::putAvpacket(AVPacket *packet) {
 
     queuePacket.push(packet);
 
-    LOGD("放入一个AVpacket到队里里面， 个数为：%d", queuePacket.size());
+    //LOGD("放入一个AVpacket到队里里面， 个数为：%d", queuePacket.size());
 
     pthread_cond_signal(&condPacket);
     pthread_mutex_unlock(&mutexPacket);
@@ -46,7 +48,7 @@ int PlayQueue::getAvpacket(AVPacket *packet) {
             av_free(avPacket);
             avPacket = NULL;
 
-                LOGD("从队列里面取出一个AVpacket，还剩下 %d 个", queuePacket.size());
+            //LOGD("从队列里面取出一个AVpacket，还剩下 %d 个", queuePacket.size());
 
             break;
         } else{
@@ -65,4 +67,18 @@ int PlayQueue::getQueueSize() {
     pthread_mutex_unlock(&mutexPacket);
 
     return size;
+}
+
+void PlayQueue::clearQueue() {
+    LOGD("clearQueue");
+    pthread_cond_signal(&condPacket);
+    pthread_mutex_lock(&mutexPacket);
+    while (!queuePacket.empty()){
+        AVPacket *avPacket =  queuePacket.front();
+        queuePacket.pop();
+        av_packet_free(&avPacket);
+        av_free(avPacket);
+        avPacket = NULL;
+    }
+    pthread_mutex_unlock(&mutexPacket);
 }

@@ -5,6 +5,7 @@
 #include "Audio.h"
 
 Audio::Audio(Playstatus *playstatus, int sample_rate, CallJava *callJava) {
+    LOGD("Audio");
     this->playstatus = playstatus;
     queue = new PlayQueue(playstatus);
     buffer = (uint8_t *) av_malloc(44100 * 2 * 2);
@@ -13,6 +14,21 @@ Audio::Audio(Playstatus *playstatus, int sample_rate, CallJava *callJava) {
 }
 
 Audio::~Audio() {
+    LOGD("~Audio");
+    if (buffer){
+        av_free(buffer);
+        buffer = NULL;
+    }
+    if (avPacket){
+        av_packet_free(&avPacket);
+        av_free(avPacket);
+        avPacket = NULL;
+    }
+    if (avFrame){
+        av_frame_free(&avFrame);
+        av_free(avFrame);
+        avFrame = NULL;
+    }
 
 }
 
@@ -50,6 +66,57 @@ void Audio::pause(){
 }
 
 void  Audio::stop(){
+    if (pcmPlayerPlay){
+        (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay, SL_PLAYSTATE_STOPPED);
+    }
+}
+
+void  Audio::release(){
+    LOGD("release");
+   if (queue){
+       delete(queue);
+       queue = NULL;
+   }
+
+    if(pcmPlayerObject != NULL)
+    {
+        (*pcmPlayerObject)->Destroy(pcmPlayerObject);
+        pcmPlayerObject = NULL;
+        pcmPlayerPlay = NULL;
+        pcmBufferQueue = NULL;
+    }
+
+    if(outputMixObject != NULL)
+    {
+        (*outputMixObject)->Destroy(outputMixObject);
+        outputMixObject = NULL;
+        outputMixEnvironmentalReverb = NULL;
+    }
+
+    if(engineObject != NULL)
+    {
+        (*engineObject)->Destroy(engineObject);
+        engineObject = NULL;
+        engineEngine = NULL;
+    }
+
+
+    if(avCodecContext != NULL)
+    {
+        avcodec_close(avCodecContext);
+        avcodec_free_context(&avCodecContext);
+        avCodecContext = NULL;
+    }
+
+    if(playstatus != NULL)
+    {
+        playstatus = NULL;
+    }
+    if(callJava != NULL)
+    {
+        callJava = NULL;
+    }
+
 
 }
 
@@ -57,7 +124,7 @@ void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void *context) {
     Audio *audio = (Audio *) context;
     if (audio != NULL) {
         int buffersize = audio->resampleAudio();
-        LOGD("pcmBufferCallBack() buffersize");
+        //LOGD("pcmBufferCallBack() buffersize");
         audio->cureent_clock += buffersize/((double)(audio->sample_rate*2*2));
         if(audio->cureent_clock - audio->last_time >=0.5){
             audio->last_time = audio->cureent_clock;
@@ -191,13 +258,15 @@ int Audio::resampleAudio() {
         if (queue->getQueueSize() == 0) {
             if (!playstatus->load){
                 playstatus->load = true;
-                callJava->onCallBack(callJava->jmid_load, CHILD_THREAD, true);
+                callJava->onCallLoad(CHILD_THREAD, true);
+               // callJava->onCallBack(callJava->jmid_load, CHILD_THREAD, true);
             }
             continue;
         } else {
             if (playstatus->load){
                 playstatus->load = false;
-                callJava->onCallBack(callJava->jmid_load, CHILD_THREAD, false);
+                callJava->onCallLoad(CHILD_THREAD, false);
+               // callJava->onCallBack(callJava->jmid_load, CHILD_THREAD, false);
             }
         }
 
@@ -265,7 +334,7 @@ int Audio::resampleAudio() {
             cureent_clock = now_time;
 
 
-            LOGD("data_size is %d", data_size);
+           // LOGD("data_size is %d", data_size);
             av_packet_free(&avPacket);
             av_free(avPacket);
             avPacket = NULL;

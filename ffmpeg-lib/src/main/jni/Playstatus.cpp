@@ -6,4 +6,9 @@
 
 Playstatus::Playstatus() {
     exit = false;
+    load = false;
+}
+
+Playstatus::~Playstatus() {
+
 }

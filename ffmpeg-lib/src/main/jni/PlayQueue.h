@@ -17,26 +17,20 @@ extern "C"
 
 
 class PlayQueue {
-
 public:
     std::queue<AVPacket *> queuePacket;
     pthread_mutex_t mutexPacket;
     pthread_cond_t condPacket;
-    Playstatus *playstatus = NULL;
+    Playstatus *playstatus =NULL;
 
-public:
 
     PlayQueue(Playstatus *playstatus);
     ~PlayQueue();
 
     int putAvpacket(AVPacket *packet);
     int getAvpacket(AVPacket *packet);
-
     int getQueueSize();
-
-
-
-
+    void clearQueue();
 };
 
 

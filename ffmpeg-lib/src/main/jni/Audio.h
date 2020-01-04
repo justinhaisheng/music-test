@@ -67,6 +67,7 @@ public:
     void play();
     void resume();
     void pause();
+    void release();
     void stop();
     void initOpenSLES();
     int resampleAudio();

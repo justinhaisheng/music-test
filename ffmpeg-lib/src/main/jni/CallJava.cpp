@@ -5,7 +5,7 @@
 #include "CallJava.h"
 
 CallJava::CallJava(_JavaVM *javaVM, JNIEnv *env, jobject obj) {
-
+    LOGD("CallJava");
     this->javaVM = javaVM;
     this->jniEnv = env;
     this->jobj = env->NewGlobalRef(obj);
@@ -25,16 +25,28 @@ CallJava::CallJava(_JavaVM *javaVM, JNIEnv *env, jobject obj) {
     jmid_resume = env->GetMethodID(jlz, "resume_n", "()V");
     jmid_load = env->GetMethodID(jlz, "load_n", "(Z)V");
     jmid_timeback = env->GetMethodID(jlz, "timeback_n", "(II)V");
+
+    env->DeleteLocalRef(jlz);
 }
 
-void CallJava::onCallBack(jmethodID jmid,int type,...) {
+CallJava::~CallJava(){
+    LOGD("~CallJava");
+    JNIEnv *jniEnv;
+    if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK)
+    {
+        LOGE("get child thread jnienv worng");
+        return;
+    }
+    jniEnv->DeleteGlobalRef(jobj);
+  //  javaVM->DetachCurrentThread();
+}
 
+
+void CallJava::onCallLoad(int type,bool load) {
+    LOGD("onCallBack");
     if(type == MAIN_THREAD)
     {
-        va_list args;
-        va_start(args, type);
-        jniEnv->CallVoidMethod(jobj,jmid,args);
-        va_end(args);
+        jniEnv->CallVoidMethod(jobj,jmid_load,load);
     }
     else if(type == CHILD_THREAD)
     {
@@ -44,10 +56,9 @@ void CallJava::onCallBack(jmethodID jmid,int type,...) {
             LOGE("get child thread jnienv worng");
             return;
         }
-        va_list args;
-        va_start(args, type);
-        jniEnv->CallVoidMethod(jobj,jmid,args);
-        va_end(args);
+
+        jniEnv->CallVoidMethod(jobj,jmid_load,load);
+
         javaVM->DetachCurrentThread();
     }
 }

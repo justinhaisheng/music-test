@@ -39,6 +39,7 @@ public:
     void onCallResume(int type);
     void onCallPause(int type);
     void onCallComplete(int type);
+    void onCallLoad(int type,bool load);
     void onTimeback(int type,int currentTime,int duration);
 };
 

@@ -20,8 +20,6 @@ JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_parpare
         (JNIEnv *env, jobject jobj, jstring jstr){
 
     const char* url = env->GetStringUTFChars(jstr, 0);
-//    char* url_c;
-//    strcpy(url_c,url);
     LOGD("Java_com_aispeech_audio_AudioCore_start %s",url);
     if (core == NULL){
         if (callJava == NULL){
@@ -29,13 +27,9 @@ JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_parpare
         }
         playStatus = new Playstatus();
         core = new FFmpegCore(playStatus,callJava,url);
-
     }
     env->ReleaseStringUTFChars(jstr,url);
     core->prepare();
-
-
-
 }
 
 extern "C"
@@ -53,7 +47,21 @@ JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_pause
 extern "C"
 JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_stop
         (JNIEnv *env, jobject jobj){
-    core->stop();
+    if (core){
+        core->release();
+        delete(core);
+        core = NULL;
+    }
+
+    if (callJava){
+        delete(callJava);
+        callJava = NULL;
+    }
+    if (playStatus){
+        delete(playStatus);
+        playStatus = NULL;
+    }
+
 }
 
 extern "C"

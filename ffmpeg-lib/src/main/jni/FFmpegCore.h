@@ -13,6 +13,7 @@
 extern "C"
 {
 #include "libavformat/avformat.h"
+#include <libavutil/time.h>
 };
 
 
@@ -25,8 +26,8 @@ public:
     AVFormatContext *pFormatCtx = NULL;
     Audio *audio = NULL;
     Playstatus *playstatus = NULL;
-
-
+    bool exit = false;
+    pthread_mutex_t ffmpeg_mutex;
 
 public:
     FFmpegCore(Playstatus *playstatus, CallJava *callJava, const char *url);
@@ -37,7 +38,7 @@ public:
     void start();
     void pause();
     void resume();
-    void stop();
+    void release();
 };
 
 

@@ -9,7 +9,14 @@ FFmpegCore::FFmpegCore(Playstatus *playstatus, CallJava *callJava, const char *u
     this->callJava = callJava;
     this->url = static_cast<char *>(malloc(sizeof(char) * strlen(url)));
     strcpy(this->url,url);
-    //this->url = url;
+
+    pthread_mutex_init(&ffmpeg_mutex,NULL);
+}
+
+FFmpegCore::~FFmpegCore(){
+    free(url);
+    url = NULL;
+    pthread_mutex_destroy(&ffmpeg_mutex);
 }
 
 void *decodeFFmpeg(void *data)
@@ -25,19 +32,54 @@ void FFmpegCore::prepare() {
 
 }
 
+int avformat_callback(void *ctx)
+{
+    LOGD("avformat_callback");
+    FFmpegCore *fFmpeg = (FFmpegCore *) ctx;
+    if(fFmpeg->playstatus->exit)
+    {
+        return AVERROR_EOF;
+    }
+    return 0;
+}
+
 void FFmpegCore::decodeFFmpegThread() {
 
+    pthread_mutex_lock(&ffmpeg_mutex);
     av_register_all();
     avformat_network_init();
     pFormatCtx = avformat_alloc_context();
+
+    pFormatCtx->interrupt_callback.callback = avformat_callback;
+    pFormatCtx->interrupt_callback.opaque = this;
     if(avformat_open_input(&pFormatCtx, url, NULL, NULL) != 0)
     {
         LOGE("can not open url :%s", url);
+        pthread_mutex_unlock(&ffmpeg_mutex);
+        exit = true;
+
+        if(pFormatCtx != NULL)
+        {
+            avformat_close_input(&pFormatCtx);
+            avformat_free_context(pFormatCtx);
+            pFormatCtx = NULL;
+        }
+
         return;
     }
     if(avformat_find_stream_info(pFormatCtx, NULL) < 0)
     {
         LOGE("can not find streams from %s", url);
+        pthread_mutex_unlock(&ffmpeg_mutex);
+        exit = true;
+
+        if(pFormatCtx != NULL)
+        {
+            avformat_close_input(&pFormatCtx);
+            avformat_free_context(pFormatCtx);
+            pFormatCtx = NULL;
+        }
+
         return;
     }
     for(int i = 0; i < pFormatCtx->nb_streams; i++)
@@ -59,6 +101,16 @@ void FFmpegCore::decodeFFmpegThread() {
     if(!dec)
     {
         LOGE("can not find decoder");
+        pthread_mutex_unlock(&ffmpeg_mutex);
+        exit = true;
+
+        if(pFormatCtx != NULL)
+        {
+            avformat_close_input(&pFormatCtx);
+            avformat_free_context(pFormatCtx);
+            pFormatCtx = NULL;
+        }
+
         return;
     }
 
@@ -66,31 +118,91 @@ void FFmpegCore::decodeFFmpegThread() {
     if(!audio->avCodecContext)
     {
         LOGE("can not alloc new decodecctx");
+        pthread_mutex_unlock(&ffmpeg_mutex);
+        exit = true;
+
+        if(pFormatCtx != NULL)
+        {
+            avformat_close_input(&pFormatCtx);
+            avformat_free_context(pFormatCtx);
+            pFormatCtx = NULL;
+        }
+
+        if(audio->avCodecContext != NULL)
+        {
+            avcodec_close(audio->avCodecContext);
+            avcodec_free_context(&audio->avCodecContext);
+            audio->avCodecContext = NULL;
+        }
+
         return;
     }
 
     if(avcodec_parameters_to_context(audio->avCodecContext, audio->codecpar) < 0)
     {
         LOGE("can not fill decodecctx");
+        pthread_mutex_unlock(&ffmpeg_mutex);
+        exit = true;
+
+        if(pFormatCtx != NULL)
+        {
+            avformat_close_input(&pFormatCtx);
+            avformat_free_context(pFormatCtx);
+            pFormatCtx = NULL;
+        }
+
+        if(audio->avCodecContext != NULL)
+        {
+            avcodec_close(audio->avCodecContext);
+            avcodec_free_context(&audio->avCodecContext);
+            audio->avCodecContext = NULL;
+        }
+
         return;
     }
 
     if(avcodec_open2(audio->avCodecContext, dec, 0) != 0)
     {
         LOGE("cant not open audio strames");
+        pthread_mutex_unlock(&ffmpeg_mutex);
+        exit = true;
+
+        if(pFormatCtx != NULL)
+        {
+            avformat_close_input(&pFormatCtx);
+            avformat_free_context(pFormatCtx);
+            pFormatCtx = NULL;
+        }
+
+        if(audio->avCodecContext != NULL)
+        {
+            avcodec_close(audio->avCodecContext);
+            avcodec_free_context(&audio->avCodecContext);
+            audio->avCodecContext = NULL;
+        }
+
         return;
     }
-    callJava->onCallPrepare(CHILD_THREAD);
+    if(callJava != NULL)
+    {
+        if(playstatus != NULL && !playstatus->exit)
+        {
+            callJava->onCallPrepare(CHILD_THREAD);
+        } else{
+            exit = true;
+        }
+    }
+
+    pthread_mutex_unlock(&ffmpeg_mutex);
+
 }
 
 void FFmpegCore::start() {
 
     if(audio == NULL)
     {
-
             LOGE("audio is null");
             return;
-
     }
     audio->play();
 
@@ -105,9 +217,7 @@ void FFmpegCore::start() {
             {
                 //解码操作
                 count++;
-
-                    LOGI("解码第 %d 帧", count);
-
+                //LOGI("解码第 %d 帧", count);
                 audio->queue->putAvpacket(avPacket);
             } else{
                 av_packet_free(&avPacket);
@@ -130,7 +240,7 @@ void FFmpegCore::start() {
     }
 
     callJava->onCallComplete(CHILD_THREAD);
-
+    exit = true;
     LOGD("解码完成");
 
 }
@@ -148,8 +258,46 @@ void FFmpegCore::resume(){
     }
 }
 
-void FFmpegCore::stop(){
+void FFmpegCore::release(){
+
+    LOGD("release 开始释放Ffmpe");
+    if(playstatus->exit){
+        return;
+    }
+    playstatus->exit = true;
+    pthread_mutex_lock(&ffmpeg_mutex);
+    int sleepCount = 0;
+    while (!exit)
+    {
+        if(sleepCount > 1000)
+        {
+            exit = true;
+        }
+
+        LOGE("wait ffmpeg  exit %d", sleepCount);
+
+        sleepCount++;
+        av_usleep(1000 * 10);//暂停10毫秒
+    }
+
+    if(pFormatCtx != NULL)
+    {
+        avformat_close_input(&pFormatCtx);
+        avformat_free_context(pFormatCtx);
+        pFormatCtx = NULL;
+    }
+
+
     if (audio){
         audio->stop();
+        audio->release();
+        delete(audio);
+        audio = NULL;
     }
+
+    if(playstatus != NULL)
+    {
+        playstatus = NULL;
+    }
+    pthread_mutex_unlock(&ffmpeg_mutex);
 }

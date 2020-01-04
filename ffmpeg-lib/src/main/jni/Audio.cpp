@@ -58,6 +58,11 @@ void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void *context) {
     if (audio != NULL) {
         int buffersize = audio->resampleAudio();
         LOGD("pcmBufferCallBack() buffersize");
+        audio->cureent_clock += buffersize/((double)(audio->sample_rate*2*2));
+        if(audio->cureent_clock - audio->last_time >=0.5){
+            audio->last_time = audio->cureent_clock;
+            audio->callJava->onTimeback(CHILD_THREAD,((int)audio->cureent_clock),audio->duration);
+        }
         if (buffersize > 0) {
             (*audio->pcmBufferQueue)->Enqueue(audio->pcmBufferQueue, (char *) audio->buffer,
                                               buffersize);
@@ -252,8 +257,13 @@ int Audio::resampleAudio() {
 
             int out_channels = av_get_channel_layout_nb_channels(AV_CH_LAYOUT_STEREO);
             data_size = nb * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+            //当前avframe 的时间
+            now_time = avFrame->pts * av_q2d(time_base);
+            if(now_time < cureent_clock){
+                now_time = cureent_clock;
+            }
+            cureent_clock = now_time;
 
-            //fwrite(buffer, 1, data_size, outFile);
 
             LOGD("data_size is %d", data_size);
             av_packet_free(&avPacket);

@@ -65,9 +65,17 @@ public class AudioCore {
         void loading(boolean load);
     }
 
+    public interface TimeCallback{
+        void onTimeback(int currentTime,int totalTime);
+    }
 
 
+    TimeCallback  mTimeCallback;
     AudioCallback mAudioCallback;
+
+    public void setTimeCallback(TimeCallback timeCallback){
+        this.mTimeCallback = timeCallback;
+    }
 
     public void setAudioCallback(AudioCallback audioCallback){
         this.mAudioCallback = audioCallback;
@@ -118,6 +126,12 @@ public class AudioCore {
     public void load_n(boolean load){
         if (mAudioCallback!=null){
             mAudioCallback.loading(load);
+        }
+    }
+
+    public void timeback_n(int currentTime,int duration){
+        if (mTimeCallback!=null){
+            mTimeCallback.onTimeback(currentTime,duration);
         }
     }
 }

@@ -24,6 +24,7 @@ CallJava::CallJava(_JavaVM *javaVM, JNIEnv *env, jobject obj) {
     jmid_stop = env->GetMethodID(jlz, "stop_n", "()V");
     jmid_resume = env->GetMethodID(jlz, "resume_n", "()V");
     jmid_load = env->GetMethodID(jlz, "load_n", "(Z)V");
+    jmid_timeback = env->GetMethodID(jlz, "timeback_n", "(II)V");
 }
 
 void CallJava::onCallBack(jmethodID jmid,int type,...) {
@@ -50,6 +51,8 @@ void CallJava::onCallBack(jmethodID jmid,int type,...) {
         javaVM->DetachCurrentThread();
     }
 }
+
+
 
 void CallJava::onCallPrepare(int type) {
 
@@ -107,6 +110,42 @@ void CallJava::onCallResume(int type) {
         //思考为什么这里调用DetachCurrentThread 会崩溃
 
      //   javaVM->DetachCurrentThread();
+    }
+}
+void CallJava::onTimeback(int type,int currentTime, int duration){
+
+    if(type == MAIN_THREAD)
+    {
+        jniEnv->CallVoidMethod(jobj,jmid_timeback,currentTime,duration);
+    }
+    else if(type == CHILD_THREAD)
+    {
+        JNIEnv *jniEnv;
+        if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK)
+        {
+            LOGE("get child thread jnienv worng");
+            return;
+        }
+        jniEnv->CallVoidMethod(jobj,jmid_timeback,currentTime,duration);
+        javaVM->DetachCurrentThread();
+    }
+}
+
+void CallJava::onCallComplete(int type){
+    if(type == MAIN_THREAD)
+    {
+        jniEnv->CallVoidMethod(jobj,jmid_complete);
+    }
+    else if(type == CHILD_THREAD)
+    {
+        JNIEnv *jniEnv;
+        if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK)
+        {
+            LOGE("get child thread jnienv worng");
+            return;
+        }
+        jniEnv->CallVoidMethod(jobj,jmid_complete);
+        // javaVM->DetachCurrentThread();
     }
 }
 

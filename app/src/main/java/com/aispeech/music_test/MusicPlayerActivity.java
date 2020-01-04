@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.aispeech.audio.AudioCore;
 
@@ -13,11 +14,12 @@ public class MusicPlayerActivity extends AppCompatActivity {
 
     private static final String TAG = MusicPlayerActivity.class.getSimpleName();
     //private WlPlayer mWlPlayer;
-
+    private TextView tvTime;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_player);
+        tvTime = findViewById(R.id.tv_time);
 //        mWlPlayer = new WlPlayer();
 //        mWlPlayer.setSource(MusicConfig.MUSIC_2);
 //        mWlPlayer.setWlOnParparedListener(new WlOnParparedListener() {
@@ -36,6 +38,18 @@ public class MusicPlayerActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        AudioCore.getInstance().setTimeCallback(new AudioCore.TimeCallback() {
+            @Override
+            public void onTimeback(final int currentTime, final int totalTime) {
+                Log.d(TAG,"timeback() currentTime:"+currentTime+" totalTime:"+totalTime);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        tvTime.setText(TimeUtil.secdsToDateFormat(currentTime,0)+"/"+TimeUtil.secdsToDateFormat(totalTime,0));
+                    };
+                });
+            }
+        });
         AudioCore.getInstance().setAudioCallback(new AudioCore.AudioCallback() {
             @Override
             public void onPrepare() {
@@ -90,13 +104,14 @@ public class MusicPlayerActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         AudioCore.getInstance().setAudioCallback(null);
+        AudioCore.getInstance().setTimeCallback(null);
     }
 
     public void start(View view){
         new Thread(new Runnable() {
             @Override
             public void run() {
-                AudioCore.getInstance().parpare(MusicConfig.MUSIC_2);
+                AudioCore.getInstance().parpare(MusicConfig.MUSIC_1);
             }
         }).start();
 

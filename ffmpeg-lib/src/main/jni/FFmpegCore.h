@@ -20,7 +20,7 @@ class FFmpegCore {
 
 public:
     CallJava *callJava = NULL;
-    const char* url = NULL;
+    char* url = NULL;
     pthread_t decodeThread;
     AVFormatContext *pFormatCtx = NULL;
     Audio *audio = NULL;

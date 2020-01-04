@@ -35,6 +35,16 @@ public:
     uint8_t *buffer = NULL;
     //int data_size = 0;
     int sample_rate;
+
+    int duration = 0;//总时长
+    AVRational time_base;//AVframe 的时间基
+    double cureent_clock;//
+    double now_time;//当前frame时间
+    double last_time;//上一次调用的时间
+
+
+
+
     // 引擎接口
     SLObjectItf engineObject = NULL;
     SLEngineItf engineEngine = NULL;

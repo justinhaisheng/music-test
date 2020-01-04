@@ -7,7 +7,9 @@
 FFmpegCore::FFmpegCore(Playstatus *playstatus, CallJava *callJava, const char *url) {
     this->playstatus = playstatus;
     this->callJava = callJava;
-    this->url = url;
+    this->url = static_cast<char *>(malloc(sizeof(char) * strlen(url)));
+    strcpy(this->url,url);
+    //this->url = url;
 }
 
 void *decodeFFmpeg(void *data)
@@ -45,6 +47,8 @@ void FFmpegCore::decodeFFmpegThread() {
             if(audio == NULL)
             {
                 audio = new Audio(playstatus,pFormatCtx->streams[i]->codecpar->sample_rate,callJava);
+                audio->duration = pFormatCtx->duration/AV_TIME_BASE;
+                audio->time_base = pFormatCtx->streams[i]->time_base;
                 audio->streamIndex = i;
                 audio->codecpar = pFormatCtx->streams[i]->codecpar;
             }
@@ -125,8 +129,9 @@ void FFmpegCore::start() {
         }
     }
 
+    callJava->onCallComplete(CHILD_THREAD);
 
-        LOGD("解码完成");
+    LOGD("解码完成");
 
 }
 

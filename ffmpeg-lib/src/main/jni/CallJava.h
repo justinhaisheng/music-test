@@ -27,6 +27,7 @@ public:
     jmethodID jmid_pause;
     jmethodID jmid_stop;
     jmethodID jmid_load;
+    jmethodID jmid_timeback;
 public:
     CallJava(_JavaVM *javaVM, JNIEnv *env, jobject obj);
     ~CallJava();
@@ -37,6 +38,8 @@ public:
     void onCallStart(int type);
     void onCallResume(int type);
     void onCallPause(int type);
+    void onCallComplete(int type);
+    void onTimeback(int type,int currentTime,int duration);
 };
 
 

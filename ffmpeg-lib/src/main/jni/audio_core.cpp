@@ -20,6 +20,8 @@ JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_parpare
         (JNIEnv *env, jobject jobj, jstring jstr){
 
     const char* url = env->GetStringUTFChars(jstr, 0);
+//    char* url_c;
+//    strcpy(url_c,url);
     LOGD("Java_com_aispeech_audio_AudioCore_start %s",url);
     if (core == NULL){
         if (callJava == NULL){
@@ -30,8 +32,10 @@ JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_parpare
 
     }
     env->ReleaseStringUTFChars(jstr,url);
-
     core->prepare();
+
+
+
 }
 
 extern "C"

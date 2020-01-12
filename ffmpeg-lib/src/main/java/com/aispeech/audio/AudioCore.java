@@ -69,9 +69,19 @@ public class AudioCore {
         void onTimeback(int currentTime,int totalTime);
     }
 
+    public interface ErrorCallback{
+        void onError(int code,String msg);
+    }
+
 
     TimeCallback  mTimeCallback;
     AudioCallback mAudioCallback;
+    ErrorCallback mErrorCallback;
+
+    public void setErrorCallback(ErrorCallback errorCallback){
+        this.mErrorCallback = errorCallback;
+    }
+
 
     public void setTimeCallback(TimeCallback timeCallback){
         this.mTimeCallback = timeCallback;
@@ -132,6 +142,14 @@ public class AudioCore {
     public void timeback_n(int currentTime,int duration){
         if (mTimeCallback!=null){
             mTimeCallback.onTimeback(currentTime,duration);
+        }
+    }
+
+    public void errorback_n(int code,String msg){
+       // stop();
+        if (mErrorCallback!=null){
+            stop();
+            mErrorCallback.onError(code,msg);
         }
     }
 }

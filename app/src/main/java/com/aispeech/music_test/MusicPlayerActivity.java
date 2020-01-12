@@ -95,7 +95,13 @@ public class MusicPlayerActivity extends AppCompatActivity {
 
             @Override
             public void loading(boolean load) {
-                Log.d(TAG,"onStop() load:"+load);
+                Log.d(TAG,"loading() load:"+load);
+            }
+        });
+        AudioCore.getInstance().setErrorCallback(new AudioCore.ErrorCallback() {
+            @Override
+            public void onError(int code, String msg) {
+                Log.d(TAG,"onError() code:"+code +"msg:"+msg);
             }
         });
     }
@@ -105,13 +111,14 @@ public class MusicPlayerActivity extends AppCompatActivity {
         super.onStop();
         AudioCore.getInstance().setAudioCallback(null);
         AudioCore.getInstance().setTimeCallback(null);
+        AudioCore.getInstance().setErrorCallback(null);
     }
 
     public void start(View view){
         new Thread(new Runnable() {
             @Override
             public void run() {
-                AudioCore.getInstance().parpare(MusicConfig.MUSIC_2);
+                AudioCore.getInstance().parpare(MusicConfig.MUSIC_1);
             }
         }).start();
 

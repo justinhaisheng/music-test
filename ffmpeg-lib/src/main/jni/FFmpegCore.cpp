@@ -55,8 +55,7 @@ void FFmpegCore::decodeFFmpegThread() {
     if(avformat_open_input(&pFormatCtx, url, NULL, NULL) != 0)
     {
         LOGE("can not open url :%s", url);
-        pthread_mutex_unlock(&ffmpeg_mutex);
-        exit = true;
+
 
         if(pFormatCtx != NULL)
         {
@@ -65,13 +64,19 @@ void FFmpegCore::decodeFFmpegThread() {
             pFormatCtx = NULL;
         }
 
+        if(callJava){
+            char temp[100];
+            sprintf(temp,"can not open %s",url);
+            callJava->onErrorback(CHILD_THREAD,001,temp);
+        }
+
+        pthread_mutex_unlock(&ffmpeg_mutex);
+        exit = true;
         return;
     }
     if(avformat_find_stream_info(pFormatCtx, NULL) < 0)
     {
         LOGE("can not find streams from %s", url);
-        pthread_mutex_unlock(&ffmpeg_mutex);
-        exit = true;
 
         if(pFormatCtx != NULL)
         {
@@ -79,6 +84,15 @@ void FFmpegCore::decodeFFmpegThread() {
             avformat_free_context(pFormatCtx);
             pFormatCtx = NULL;
         }
+
+        if(callJava){
+            char temp[100];
+            sprintf(temp,"can not find streams from %s",url);
+            callJava->onErrorback(CHILD_THREAD,002,temp);
+        }
+
+        pthread_mutex_unlock(&ffmpeg_mutex);
+        exit = true;
 
         return;
     }
@@ -101,15 +115,20 @@ void FFmpegCore::decodeFFmpegThread() {
     if(!dec)
     {
         LOGE("can not find decoder");
-        pthread_mutex_unlock(&ffmpeg_mutex);
-        exit = true;
-
         if(pFormatCtx != NULL)
         {
             avformat_close_input(&pFormatCtx);
             avformat_free_context(pFormatCtx);
             pFormatCtx = NULL;
         }
+
+        if(callJava){
+            char temp[100];
+            sprintf(temp,"can not find decoder %s",url);
+            callJava->onErrorback(CHILD_THREAD,003,temp);
+        }
+        pthread_mutex_unlock(&ffmpeg_mutex);
+        exit = true;
 
         return;
     }
@@ -118,9 +137,6 @@ void FFmpegCore::decodeFFmpegThread() {
     if(!audio->avCodecContext)
     {
         LOGE("can not alloc new decodecctx");
-        pthread_mutex_unlock(&ffmpeg_mutex);
-        exit = true;
-
         if(pFormatCtx != NULL)
         {
             avformat_close_input(&pFormatCtx);
@@ -135,15 +151,19 @@ void FFmpegCore::decodeFFmpegThread() {
             audio->avCodecContext = NULL;
         }
 
+        if(callJava){
+            char temp[100];
+            sprintf(temp,"can not alloc new decodecctx %s",url);
+            callJava->onErrorback(CHILD_THREAD,004,temp);
+        }
+        pthread_mutex_unlock(&ffmpeg_mutex);
+        exit = true;
         return;
     }
 
     if(avcodec_parameters_to_context(audio->avCodecContext, audio->codecpar) < 0)
     {
         LOGE("can not fill decodecctx");
-        pthread_mutex_unlock(&ffmpeg_mutex);
-        exit = true;
-
         if(pFormatCtx != NULL)
         {
             avformat_close_input(&pFormatCtx);
@@ -157,6 +177,14 @@ void FFmpegCore::decodeFFmpegThread() {
             avcodec_free_context(&audio->avCodecContext);
             audio->avCodecContext = NULL;
         }
+
+        if(callJava){
+            char temp[100];
+            sprintf(temp,"can not fill decodecctx %s",url);
+            callJava->onErrorback(CHILD_THREAD,005,temp);
+        }
+        pthread_mutex_unlock(&ffmpeg_mutex);
+        exit = true;
 
         return;
     }
@@ -164,8 +192,6 @@ void FFmpegCore::decodeFFmpegThread() {
     if(avcodec_open2(audio->avCodecContext, dec, 0) != 0)
     {
         LOGE("cant not open audio strames");
-        pthread_mutex_unlock(&ffmpeg_mutex);
-        exit = true;
 
         if(pFormatCtx != NULL)
         {
@@ -181,6 +207,13 @@ void FFmpegCore::decodeFFmpegThread() {
             audio->avCodecContext = NULL;
         }
 
+        if(callJava){
+            char temp[100];
+            sprintf(temp,"cant not open audio strames %s",url);
+            callJava->onErrorback(CHILD_THREAD,006,temp);
+        }
+        pthread_mutex_unlock(&ffmpeg_mutex);
+        exit = true;
         return;
     }
     if(callJava != NULL)
@@ -261,9 +294,9 @@ void FFmpegCore::resume(){
 void FFmpegCore::release(){
 
     LOGD("release 开始释放Ffmpe");
-    if(playstatus->exit){
-        return;
-    }
+//    if(playstatus->exit){
+//        return;
+//    }
     playstatus->exit = true;
     pthread_mutex_lock(&ffmpeg_mutex);
     int sleepCount = 0;
@@ -300,4 +333,6 @@ void FFmpegCore::release(){
         playstatus = NULL;
     }
     pthread_mutex_unlock(&ffmpeg_mutex);
+
+    LOGD("release 释放Ffmpe完毕");
 }

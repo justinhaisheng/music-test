@@ -7,6 +7,9 @@ FFmpegCore* core = NULL;
 CallJava* callJava =NULL;
 Playstatus* playStatus = NULL;
 
+bool next = true;
+
+
 extern "C"
 JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_start
         (JNIEnv *env, jobject jobj){
@@ -47,6 +50,13 @@ JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_pause
 extern "C"
 JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_stop
         (JNIEnv *env, jobject jobj){
+
+    if (!next){
+        LOGE("next false");
+        return;
+    }
+    next = false;
+
     if (core){
         core->release();
         delete(core);
@@ -61,7 +71,7 @@ JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_stop
         delete(playStatus);
         playStatus = NULL;
     }
-
+    next = true;
 }
 
 extern "C"

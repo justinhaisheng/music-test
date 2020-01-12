@@ -25,7 +25,7 @@ CallJava::CallJava(_JavaVM *javaVM, JNIEnv *env, jobject obj) {
     jmid_resume = env->GetMethodID(jlz, "resume_n", "()V");
     jmid_load = env->GetMethodID(jlz, "load_n", "(Z)V");
     jmid_timeback = env->GetMethodID(jlz, "timeback_n", "(II)V");
-
+    jmid_errorback = env->GetMethodID(jlz, "errorback_n", "(ILjava/lang/String;)V");
     env->DeleteLocalRef(jlz);
 }
 
@@ -138,6 +138,29 @@ void CallJava::onTimeback(int type,int currentTime, int duration){
             return;
         }
         jniEnv->CallVoidMethod(jobj,jmid_timeback,currentTime,duration);
+        javaVM->DetachCurrentThread();
+    }
+}
+
+void CallJava::onErrorback(int type,int code,char* msg){
+    if(type == MAIN_THREAD)
+    {
+        jstring jmsg = jniEnv->NewStringUTF(msg);
+        jniEnv->CallVoidMethod(jobj, jmid_errorback, code, jmsg);
+        jniEnv->DeleteLocalRef(jmsg);
+    }
+    else if(type == CHILD_THREAD)
+    {
+        JNIEnv *jniEnv;
+        if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK)
+        {
+            LOGE("get child thread jnienv worng");
+            return;
+        }
+        jstring jmsg = jniEnv->NewStringUTF(msg);
+        jniEnv->CallVoidMethod(jobj, jmid_errorback, code, jmsg);
+        jniEnv->DeleteLocalRef(jmsg);
+       // jniEnv->CallVoidMethod(jobj,jmid_errorback,code,msg);
         javaVM->DetachCurrentThread();
     }
 }

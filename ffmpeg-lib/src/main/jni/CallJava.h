@@ -28,11 +28,11 @@ public:
     jmethodID jmid_stop;
     jmethodID jmid_load;
     jmethodID jmid_timeback;
+
+    jmethodID jmid_errorback;
 public:
     CallJava(_JavaVM *javaVM, JNIEnv *env, jobject obj);
     ~CallJava();
-
-    void onCallBack(jmethodID jmid,int type,...);
 
     void onCallPrepare(int type);
     void onCallStart(int type);
@@ -41,6 +41,7 @@ public:
     void onCallComplete(int type);
     void onCallLoad(int type,bool load);
     void onTimeback(int type,int currentTime,int duration);
+    void onErrorback(int type,int code,char* msg);
 };
 
 

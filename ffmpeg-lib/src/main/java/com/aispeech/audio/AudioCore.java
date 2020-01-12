@@ -110,6 +110,7 @@ public class AudioCore {
     }
 
     public void complete_n(){
+        stop();
         if (mAudioCallback!=null){
             mAudioCallback.onComplete(true);
         }
@@ -146,9 +147,8 @@ public class AudioCore {
     }
 
     public void errorback_n(int code,String msg){
-       // stop();
+        stop();
         if (mErrorCallback!=null){
-            stop();
             mErrorCallback.onError(code,msg);
         }
     }

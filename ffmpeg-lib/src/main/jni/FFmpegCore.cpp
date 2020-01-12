@@ -11,12 +11,14 @@ FFmpegCore::FFmpegCore(Playstatus *playstatus, CallJava *callJava, const char *u
     strcpy(this->url,url);
 
     pthread_mutex_init(&ffmpeg_mutex,NULL);
+    pthread_mutex_init(&seek_mutex,NULL);
 }
 
 FFmpegCore::~FFmpegCore(){
     free(url);
     url = NULL;
     pthread_mutex_destroy(&ffmpeg_mutex);
+    pthread_mutex_destroy(&seek_mutex);
 }
 
 void *decodeFFmpeg(void *data)
@@ -243,8 +245,23 @@ void FFmpegCore::start() {
 
     while(playstatus != NULL && !playstatus->exit)
     {
+
+        if (playstatus->seek){
+            LOGE("seek wait");
+            continue;
+        }
+
+        if(audio->queue->getQueueSize() > 50)//?????
+        {
+            //LOGE(">40 wait");
+            continue;
+        }
         AVPacket *avPacket = av_packet_alloc();
-        if(av_read_frame(pFormatCtx, avPacket) == 0)
+        pthread_mutex_lock(&seek_mutex);
+        int read_ok = av_read_frame(pFormatCtx, avPacket);
+       // LOGD("av_read_frame %d",read_ok);
+        pthread_mutex_unlock(&seek_mutex);
+        if(read_ok == 0)
         {
             if(avPacket->stream_index == audio->streamIndex)
             {
@@ -266,10 +283,13 @@ void FFmpegCore::start() {
                     continue;
                 } else{
                     playstatus->exit = true;
+                    LOGD("隊列沒有數據 %d",playstatus->seek);
                     break;
                 }
             }
         }
+
+
     }
 
     callJava->onCallComplete(CHILD_THREAD);
@@ -284,6 +304,29 @@ void FFmpegCore::pause(){
     }
 }
 
+
+void FFmpegCore::seek(int second){
+    if(audio->duration <= 0)
+    {
+        return;
+    }
+    if(second >= 0 && second <= audio->duration)
+    {
+        if(audio != NULL)
+        {
+            playstatus->seek = true;
+            audio->queue->clearQueue();
+            audio->cureent_clock = 0;
+            audio->last_time = 0;
+            pthread_mutex_lock(&seek_mutex);
+            int64_t rel = second * AV_TIME_BASE;
+            LOGD("seek %ld",rel);
+            avformat_seek_file(pFormatCtx, -1, INT64_MIN, rel, INT64_MAX, 0);
+            pthread_mutex_unlock(&seek_mutex);
+            playstatus->seek = false;
+        }
+    }
+}
 
 void FFmpegCore::resume(){
     if (audio){

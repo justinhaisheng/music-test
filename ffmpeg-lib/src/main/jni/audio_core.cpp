@@ -75,6 +75,14 @@ JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_stop
 }
 
 extern "C"
+JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_seek
+        (JNIEnv *env, jobject jobj, jint jsecond){
+    if (core){
+        core->seek(jsecond);
+    }
+}
+
+extern "C"
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void* reserved){
     LOGD("JNI_OnLoad");
     javaVm = vm;

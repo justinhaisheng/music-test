@@ -9,8 +9,9 @@
 class Playstatus {
 
 public:
-    bool exit;
-    bool load;
+    bool exit = false;
+    bool load = false;
+    bool seek = false;
 public:
     Playstatus();
     ~Playstatus();

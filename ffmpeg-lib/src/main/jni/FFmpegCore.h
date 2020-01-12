@@ -28,7 +28,7 @@ public:
     Playstatus *playstatus = NULL;
     bool exit = false;
     pthread_mutex_t ffmpeg_mutex;
-
+    pthread_mutex_t seek_mutex;
 public:
     FFmpegCore(Playstatus *playstatus, CallJava *callJava, const char *url);
     ~FFmpegCore();
@@ -39,6 +39,7 @@ public:
     void pause();
     void resume();
     void release();
+    void seek(int second);
 };
 
 

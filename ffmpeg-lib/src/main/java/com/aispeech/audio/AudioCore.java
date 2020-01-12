@@ -48,7 +48,7 @@ public class AudioCore {
     public native void resume();
     public native void pause();
     public native void stop();
-
+    public native void seek(int second);
     /*
     *
     *@author luhaisheng

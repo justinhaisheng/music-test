@@ -47,6 +47,14 @@ JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_pause
 JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_stop
   (JNIEnv *, jobject);
 
+/*
+ * Class:     com_aispeech_audio_AudioCore
+ * Method:    seek
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_aispeech_audio_AudioCore_seek
+  (JNIEnv *, jobject, jint);
+
 #ifdef __cplusplus
 }
 #endif

@@ -71,7 +71,7 @@ public:
     void stop();
     void initOpenSLES();
     int resampleAudio();
-    int getCurrentSampleRateForOpensles(int sample_rate);
+    SLuint32 getCurrentSampleRateForOpensles(int sample_rate);
 };
 
 

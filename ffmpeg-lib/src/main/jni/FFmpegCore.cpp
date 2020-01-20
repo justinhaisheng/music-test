@@ -36,7 +36,7 @@ void FFmpegCore::prepare() {
 
 int avformat_callback(void *ctx)
 {
-    LOGD("avformat_callback");
+    //LOGD("avformat_callback");
     FFmpegCore *fFmpeg = (FFmpegCore *) ctx;
     if(fFmpeg->playstatus->exit)
     {

@@ -1,5 +1,9 @@
 package com.aispeech.audio;
 
+import android.os.SystemClock;
+import android.text.TextUtils;
+import android.util.Log;
+
 /**
  * @创建者 luhaisheng
  * @创建时间 2019/12/18 21:01
@@ -21,7 +25,7 @@ public class AudioCore {
     }
 
     static AudioCore  sINSTANCE;
-
+    public String nextUrl = null;
     private AudioCore(){
 
     }
@@ -49,6 +53,10 @@ public class AudioCore {
     public native void pause();
     public native void stop();
     public native void seek(int second);
+    public void next(String url){
+        nextUrl = url;
+        stop();
+    }
     /*
     *
     *@author luhaisheng
@@ -91,50 +99,74 @@ public class AudioCore {
         this.mAudioCallback = audioCallback;
     }
 
+    private static final String TAG = "AudioCore";
+
     public void prepare_n(){
+        Log.d(TAG,"prepare_n()");
         if (mAudioCallback!=null){
             mAudioCallback.onPrepare();
         }
     }
 
     public void start_n(){
+        Log.d(TAG,"start_n()");
         if (mAudioCallback!=null){
             mAudioCallback.onStart();
         }
     }
 
     public void progress_n(float pro){
+        Log.d(TAG,"progress_n() pro:"+pro);
         if (mAudioCallback!=null){
             mAudioCallback.onProgress(pro);
         }
     }
 
     public void complete_n(){
+        Log.d(TAG,"complete_n() nextUrl:"+nextUrl);
         stop();
+
         if (mAudioCallback!=null){
             mAudioCallback.onComplete(true);
         }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SystemClock.sleep(1000);
+
+                if (!TextUtils.isEmpty(nextUrl)){
+                    parpare(nextUrl);
+                    nextUrl = null;
+                }
+            }
+        }).start();
+
     }
 
     public void resume_n(){
+        Log.d(TAG,"resume_n()");
         if (mAudioCallback!=null){
             mAudioCallback.onResume();
         }
     }
 
     public void pause_n(){
+        Log.d(TAG,"pause_n()");
         if (mAudioCallback!=null){
             mAudioCallback.onPause();
         }
     }
 
     public void stop_n(){
+        Log.d(TAG,"stop_n()");
         if (mAudioCallback!=null){
             mAudioCallback.onStop();
         }
     }
 
     public void load_n(boolean load){
+        Log.d(TAG,"load_n() load:"+load);
         if (mAudioCallback!=null){
             mAudioCallback.loading(load);
         }
@@ -147,6 +179,7 @@ public class AudioCore {
     }
 
     public void errorback_n(int code,String msg){
+        Log.d(TAG,"errorback_n() msg:"+msg);
         stop();
         if (mErrorCallback!=null){
             mErrorCallback.onError(code,msg);

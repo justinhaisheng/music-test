@@ -159,4 +159,13 @@ public class MusicPlayerActivity extends AppCompatActivity {
             }
         }).start();
     }
+
+    public void next(View view) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                AudioCore.getInstance().next(MusicConfig.MUSIC_4);
+            }
+        }).start();
+    }
 }
